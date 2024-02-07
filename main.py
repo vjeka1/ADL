@@ -12,6 +12,7 @@ from PyQt6.QtGui import *
 from openpyxl.reader.excel import load_workbook
 from forecast import main_import_file
 
+
 class FileSelectionApp(QMainWindow):
     def __init__(self):
         super(FileSelectionApp, self).__init__(None)
@@ -26,12 +27,10 @@ class FileSelectionApp(QMainWindow):
         self.file_label = QLabel('Выберите файл:')
         layout.addWidget(self.file_label)
 
-        # Создаем кнопку для создания прогноза
-        self.create_prediction_on_chosen_file = QPushButton('Создать прогноз')
-        self.create_prediction_on_chosen_file.setEnabled(False)
-        # Используем lambda-функцию, чтобы передать параметр
-        self.create_prediction_on_chosen_file.clicked.connect(self.create_prediction)
-        layout.addWidget(self.create_prediction_on_chosen_file)
+        # Создаем кнопку для выбора листа
+        self.select_file_button = QPushButton('Выбрать файл')
+        self.select_file_button.clicked.connect(self.open_file_and_choose_sheet)
+        layout.addWidget(self.select_file_button)
 
         # Создаем кнопку для выбора листа
         self.select_sheet_button = QPushButton('Выбрать лист')
@@ -39,9 +38,16 @@ class FileSelectionApp(QMainWindow):
         self.select_sheet_button.clicked.connect(self.choose_excel_sheet)
         layout.addWidget(self.select_sheet_button)
 
+        # Создаем кнопку для создания прогноза
+        self.create_prediction_on_chosen_file = QPushButton('Создать прогноз')
+        self.create_prediction_on_chosen_file.setEnabled(False)
+        # Используем lambda-функцию, чтобы передать параметр
+        self.create_prediction_on_chosen_file.clicked.connect(self.create_short_term_prediction)
+        layout.addWidget(self.create_prediction_on_chosen_file)
+
         # Создаем кнопку для создания графика
         self.create_prediction_graph = QPushButton('Создать график')
-        # Используем lambda-функцию, чтобы передать параметр
+        self.create_prediction_graph.setEnabled(False)
         self.create_prediction_graph.clicked.connect(self.choose_column_name_for_plot)
         layout.addWidget(self.create_prediction_graph)
 
@@ -96,6 +102,7 @@ class FileSelectionApp(QMainWindow):
                 self.selected_file = selected_file
                 self.select_sheet_button.setEnabled(True)
                 self.create_prediction_on_chosen_file.setEnabled(True)
+                self.create_prediction_graph.setEnabled(True)
                 self.choose_excel_sheet()
 
         except Exception as e:
@@ -163,6 +170,93 @@ class FileSelectionApp(QMainWindow):
         except Exception as e:
             print(f"Ошибка при запуске диалогового окна выбора осей графика: {e}")
 
+    def create_short_term_prediction(self):
+        try:
+            if self.selected_file and self.selected_sheet:
+                column_names = [self.table_widget.horizontalHeaderItem(j).text() for j in
+                                range(self.table_widget.columnCount())]
+
+                # Создаем новый экземпляр DataSelectionDialog
+                data_selection_dialog = ForecastWindow(column_names=column_names, selected_file=self.selected_file,
+                                                       selected_sheet=self.selected_sheet)
+                data_selection_dialog.exec()
+        except Exception as e:
+            print(f"Ошибка при запуске диалогового окна выбора настройки создания прогноза: {e}")
+
+
+class ForecastWindow(QDialog):
+    def __init__(self, column_names, selected_file, selected_sheet):
+        super().__init__()
+        self.count_factors = None
+        self.column_names = column_names
+        self.selected_file = selected_file
+        self.selected_sheet = selected_sheet
+        self.setWindowTitle('Выбор данных для создания прогноза')
+        self.adjustSize()
+
+        layout = QVBoxLayout()
+
+        # Добавляем QLabel и QComboBox для выбора данных по оси X
+        self.label_x = QLabel('Выберите столбец данных с временными метками:')
+        self.menu_x = QComboBox()
+        self.menu_x.addItems(column_names)
+        layout.addWidget(self.label_x)
+        layout.addWidget(self.menu_x)
+
+        # Добавляем QTableWidget для выбора факторов
+        self.table_widget = QTableWidget()
+        self.table_widget.setColumnCount(1)
+        self.table_widget.setRowCount(len(column_names))
+        self.table_widget.setHorizontalHeaderLabels(['Выбрать столбец'])
+        self.table_widget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        self.table_widget.itemChanged.connect(self.handle_item_changed)
+        self.table_widget.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+
+        for i, column_name in enumerate(column_names):
+            item = QTableWidgetItem(column_name)
+            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            item.setCheckState(Qt.CheckState.Unchecked)
+            self.table_widget.setItem(i, 0, item)
+
+        layout.addWidget(self.table_widget)
+
+        # Кнопки "OK" и "Отмена"
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        buttons.accepted.connect(self.on_accepted)
+        buttons.rejected.connect(self.reject)
+        layout.addWidget(buttons)
+
+        self.setLayout(layout)
+
+    def handle_item_changed(self):
+        checked_count = (1 for row in range(self.table_widget.rowCount()) if
+                         self.table_widget.item(row, 0).checkState() == Qt.CheckState.Checked)
+
+        try:
+            checked_count_sum = sum(checked_count)
+            if checked_count_sum > 3:
+                for row in range(self.table_widget.rowCount()):
+                    item = self.table_widget.item(row, 0)
+                    item.setCheckState(Qt.CheckState.Unchecked)
+        except Exception as e:
+            print(f"Exception occurred: {e}")
+
+    def on_accepted(self):
+        self.accept()
+
+    def select_factors_dialog(self):
+        try:
+            self.count_factors = int(self.menu_num_factors.currentText())
+            # Создаем новый экземпляр FactorSelectionDialog
+            data_selection_dialog = FactorSelectionDialog(column_names=self.column_names,
+                                                          selected_file=self.selected_file,
+                                                          selected_sheet=self.selected_sheet,
+                                                          count_factors=self.count_factors)
+            data_selection_dialog.exec()
+
+        except Exception as e:
+            print(f"Ошибка при запуске диалогового окна выбора main: {e}")
+
 
 class DataSelectionDialog(QDialog):
     def __init__(self, column_names, selected_file, selected_sheet):
@@ -210,6 +304,39 @@ class DataSelectionDialog(QDialog):
             data = pd.read_excel(self.selected_file, sheet_name=self.selected_sheet)
             plot_window = PlotWindow(data=data, column_names=[selected_x, selected_y])
             plot_window.exec()
+
+
+class FactorSelectionDialog(QDialog):
+    def __init__(self, column_names, selected_file, selected_sheet, count_factors):
+        super().__init__()
+        self.setWindowTitle('Выбор данных влияющих факторов')
+        self.adjustSize()
+
+        layout = QVBoxLayout()
+
+        # Добавляем QLabel и QTableWidget для выбора данных по факторам
+        self.main_label_factors = QLabel('Выберите факторы:')
+        layout.addWidget(self.main_label_factors)
+
+        self.table_widget = QTableWidget()
+        self.table_widget.setColumnCount(2)
+        self.table_widget.setHorizontalHeaderLabels(["Фактор", "Выбор"])
+        self.table_widget.setRowCount(len(column_names))
+
+        for row, factor in enumerate(column_names):
+            text_item = QTableWidgetItem(factor)
+            check_box_item = QTableWidgetItem()
+            check_box = QCheckBox()
+            self.table_widget.setCellWidget(row, 1, check_box)
+            self.table_widget.setItem(row, 0, text_item)
+
+        layout.addWidget(self.table_widget)
+
+        self.confirm_button = QPushButton('Подтвердить выбор данных влияющих факторов')
+        self.confirm_button.clicked.connect()
+        layout.addWidget(self.confirm_button)
+
+        self.setLayout(layout)
 
 
 class PlotWindow(QDialog):
