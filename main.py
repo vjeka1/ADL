@@ -11,9 +11,11 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from openpyxl.reader.excel import load_workbook
 from forecast import main_import_file
+import utilities as util
 
 
 class FileSelectionApp(QMainWindow):
+    """Main window of this program"""
     def __init__(self):
         super(FileSelectionApp, self).__init__(None)
         self.selected_file = None  # Объявляем selected_file как атрибут экземпляра класса
@@ -164,7 +166,7 @@ class FileSelectionApp(QMainWindow):
                                 range(self.table_widget.columnCount())]
 
                 # Создаем новый экземпляр DataSelectionDialog
-                data_selection_dialog = DataSelectionDialog(column_names=column_names, selected_file=self.selected_file,
+                data_selection_dialog = DataSelectionDialogPlot(column_names=column_names, selected_file=self.selected_file,
                                                             selected_sheet=self.selected_sheet)
                 data_selection_dialog.exec()
         except Exception as e:
@@ -185,6 +187,8 @@ class FileSelectionApp(QMainWindow):
 
 
 class ForecastWindow(QDialog):
+    """In this window created predicts"""
+
     def __init__(self, column_names, selected_file, selected_sheet):
         super().__init__()
         self.count_factors = None
@@ -197,12 +201,14 @@ class ForecastWindow(QDialog):
         layout = QVBoxLayout()
 
         # Добавляем QLabel и QComboBox для выбора данных по оси X
-        self.label_x = QLabel('Выберите столбец данных с временными метками:')
-        self.menu_x = QComboBox()
-        self.menu_x.addItems(column_names)
-        layout.addWidget(self.label_x)
-        layout.addWidget(self.menu_x)
+        self.label_1 = QLabel('Выберите столбец данных с временными метками:')
+        self.menu_time_label_name_column = QComboBox()
+        self.menu_time_label_name_column.addItems(column_names)
+        layout.addWidget(self.label_1)
+        layout.addWidget(self.menu_time_label_name_column)
 
+        self.label_2 = QLabel('Выберите до 3-ёх факторов прогнозной модели:')
+        layout.addWidget(self.label_2)
         # Добавляем QTableWidget для выбора факторов
         self.table_widget = QTableWidget()
         self.table_widget.setColumnCount(1)
@@ -222,7 +228,7 @@ class ForecastWindow(QDialog):
 
         # Кнопки "OK" и "Отмена"
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
-        buttons.accepted.connect(self.on_accepted)
+        buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
 
@@ -241,24 +247,26 @@ class ForecastWindow(QDialog):
         except Exception as e:
             print(f"Exception occurred: {e}")
 
-    def on_accepted(self):
-        self.accept()
+    def accept(self):
+            chosen_column_with_time_label = self.menu_time_label_name_column.currentText()
+            selected_columns  = []
+            for row in range(self.table_widget.rowCount()):
+                item = self.table_widget.item(row, 0)
+                if item.checkState() == Qt.CheckState.Checked:
+                    selected_columns.append(item.text())
+            prepared_data = util.data_preparation(self.selected_file, self.selected_sheet,
+                                                  chosen_column_with_time_label, selected_columns)
+            util.create_lags(prepared_data, selected_columns, 1)
 
-    def select_factors_dialog(self):
-        try:
-            self.count_factors = int(self.menu_num_factors.currentText())
-            # Создаем новый экземпляр FactorSelectionDialog
-            data_selection_dialog = FactorSelectionDialog(column_names=self.column_names,
-                                                          selected_file=self.selected_file,
-                                                          selected_sheet=self.selected_sheet,
-                                                          count_factors=self.count_factors)
-            data_selection_dialog.exec()
-
-        except Exception as e:
-            print(f"Ошибка при запуске диалогового окна выбора main: {e}")
+            super().accept()
+            #plot_window.exec()
 
 
-class DataSelectionDialog(QDialog):
+# class CreatedForecastWindow(QDialog):
+
+class DataSelectionDialogPlot(QDialog):
+    """In this window is happening choosing data for creating predict model"""
+
     def __init__(self, column_names, selected_file, selected_sheet):
         super().__init__()
         self.selected_file = selected_file
@@ -284,7 +292,7 @@ class DataSelectionDialog(QDialog):
 
         # Кнопки "OK" и "Отмена"
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
-        buttons.accepted.connect(self.on_accepted)  # Подключаем функцию on_accepted к сигналу accepted
+        buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
 
@@ -296,50 +304,19 @@ class DataSelectionDialog(QDialog):
         print(self.menu_y.currentText())
         return self.menu_x.currentText(), self.menu_y.currentText()
 
-    def on_accepted(self):
+    def accept(self):
         selected_x, selected_y = self.get_selected_data()
 
         if selected_x and selected_y:
             # Создаем новый экземпляр PlotWindow с выбранными данными
             data = pd.read_excel(self.selected_file, sheet_name=self.selected_sheet)
             plot_window = PlotWindow(data=data, column_names=[selected_x, selected_y])
+            super().accept()
             plot_window.exec()
 
 
-class FactorSelectionDialog(QDialog):
-    def __init__(self, column_names, selected_file, selected_sheet, count_factors):
-        super().__init__()
-        self.setWindowTitle('Выбор данных влияющих факторов')
-        self.adjustSize()
-
-        layout = QVBoxLayout()
-
-        # Добавляем QLabel и QTableWidget для выбора данных по факторам
-        self.main_label_factors = QLabel('Выберите факторы:')
-        layout.addWidget(self.main_label_factors)
-
-        self.table_widget = QTableWidget()
-        self.table_widget.setColumnCount(2)
-        self.table_widget.setHorizontalHeaderLabels(["Фактор", "Выбор"])
-        self.table_widget.setRowCount(len(column_names))
-
-        for row, factor in enumerate(column_names):
-            text_item = QTableWidgetItem(factor)
-            check_box_item = QTableWidgetItem()
-            check_box = QCheckBox()
-            self.table_widget.setCellWidget(row, 1, check_box)
-            self.table_widget.setItem(row, 0, text_item)
-
-        layout.addWidget(self.table_widget)
-
-        self.confirm_button = QPushButton('Подтвердить выбор данных влияющих факторов')
-        self.confirm_button.clicked.connect()
-        layout.addWidget(self.confirm_button)
-
-        self.setLayout(layout)
-
-
 class PlotWindow(QDialog):
+    """In this window is happening choosing data for creating plot data"""
     def __init__(self, data, column_names):
         super().__init__()
         self.setWindowTitle('График')
