@@ -9,8 +9,8 @@ b0: 0.44944714003773356
 Dep. Variable:      Ёнергопотребление   R-squared:                       0.435
 Model:                            OLS   Adj. R-squared:                  0.429
 Method:                 Least Squares   F-statistic:                     73.57
-Date:                Tue, 06 Feb 2024   Prob (F-statistic):           2.04e-24
-Time:                        23:24:07   Log-Likelihood:                -1803.8
+Date:                Wed, 07 Feb 2024   Prob (F-statistic):           2.04e-24
+Time:                        20:48:30   Log-Likelihood:                -1803.8
 No. Observations:                 194   AIC:                             3614.
 Df Residuals:                     191   BIC:                             3623.
 Df Model:                           2                                         
