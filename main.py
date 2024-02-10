@@ -1,21 +1,28 @@
 import os
 import sys
-
+import datetime
 import numpy as np
 import plotly.offline as offline
 import pandas as pd
 import plotly.express as px
+import matplotlib as mp
+import sympy as sp
 from PyQt6.QtCore import *
+from PyQt6.QtSvgWidgets import QSvgWidget
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
+from matplotlib_inline.backend_inline import FigureCanvas
 from openpyxl.reader.excel import load_workbook
+
 from forecast import main_import_file
+from matplotlib.figure import Figure
 import utilities as util
 
 
 class FileSelectionApp(QMainWindow):
     """Main window of this program"""
+
     def __init__(self):
         super(FileSelectionApp, self).__init__(None)
         self.selected_file = None  # Объявляем selected_file как атрибут экземпляра класса
@@ -166,8 +173,9 @@ class FileSelectionApp(QMainWindow):
                                 range(self.table_widget.columnCount())]
 
                 # Создаем новый экземпляр DataSelectionDialog
-                data_selection_dialog = DataSelectionDialogPlot(column_names=column_names, selected_file=self.selected_file,
-                                                            selected_sheet=self.selected_sheet)
+                data_selection_dialog = DataSelectionDialogPlot(column_names=column_names,
+                                                                selected_file=self.selected_file,
+                                                                selected_sheet=self.selected_sheet)
                 data_selection_dialog.exec()
         except Exception as e:
             print(f"Ошибка при запуске диалогового окна выбора осей графика: {e}")
@@ -201,14 +209,25 @@ class ForecastWindow(QDialog):
         layout = QVBoxLayout()
 
         # Добавляем QLabel и QComboBox для выбора данных по оси X
-        self.label_1 = QLabel('Выберите столбец данных с временными метками:')
+        self.label_1 = QLabel('Выберите столбец, для которого необходимо составить прогнозную модель:')
+        self.menu_data_prediction_name_column = QComboBox()
+        self.menu_data_prediction_name_column.addItems(column_names)
+
+        # Добавляем QLabel и QComboBox для выбора данных по оси X
+        self.label_2 = QLabel('Выберите столбец данных с временными метками:')
         self.menu_time_label_name_column = QComboBox()
         self.menu_time_label_name_column.addItems(column_names)
-        layout.addWidget(self.label_1)
-        layout.addWidget(self.menu_time_label_name_column)
+        self.label_3 = QLabel('Выберите до 3-ёх факторов прогнозной модели:')
+        self.label_4 = QLabel("Выберите размер тестовой выборки:")
 
-        self.label_2 = QLabel('Выберите до 3-ёх факторов прогнозной модели:')
-        layout.addWidget(self.label_2)
+        self.slider_box = QSlider()
+        self.slider_box.setMinimum(0)
+        self.slider_box.setMaximum(100)
+        self.slider_box.setOrientation(Qt.Orientation.Horizontal)
+        self.slider_box.setValue(66)
+        self.percent_label = QLabel("Обучающая выборка: 66% Тестовая выборка: 34%")
+        self.slider_box.valueChanged.connect(self.slider_value_changed)
+
         # Добавляем QTableWidget для выбора факторов
         self.table_widget = QTableWidget()
         self.table_widget.setColumnCount(1)
@@ -224,15 +243,26 @@ class ForecastWindow(QDialog):
             item.setCheckState(Qt.CheckState.Unchecked)
             self.table_widget.setItem(i, 0, item)
 
-        layout.addWidget(self.table_widget)
-
         # Кнопки "OK" и "Отмена"
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
+
+        layout.addWidget(self.label_1)
+        layout.addWidget(self.menu_data_prediction_name_column)
+        layout.addWidget(self.label_2)
+        layout.addWidget(self.menu_time_label_name_column)
+        layout.addWidget(self.label_3)
+        layout.addWidget(self.table_widget)
+        layout.addWidget(self.label_4)
+        layout.addWidget(self.slider_box)
+        layout.addWidget(self.percent_label)
         layout.addWidget(buttons)
 
         self.setLayout(layout)
+
+    def slider_value_changed(self, value):
+        self.percent_label.setText(f"Обучающая выборка: {value}% Тестовая выборка: {100-value}%")
 
     def handle_item_changed(self):
         checked_count = (1 for row in range(self.table_widget.rowCount()) if
@@ -248,25 +278,28 @@ class ForecastWindow(QDialog):
             print(f"Exception occurred: {e}")
 
     def accept(self):
-            chosen_column_with_time_label = self.menu_time_label_name_column.currentText()
-            selected_columns  = []
-            for row in range(self.table_widget.rowCount()):
-                item = self.table_widget.item(row, 0)
-                if item.checkState() == Qt.CheckState.Checked:
-                    selected_columns.append(item.text())
-            prepared_data = util.data_preparation(self.selected_file, self.selected_sheet,
-                                                  chosen_column_with_time_label, selected_columns)
-            util.create_lags(prepared_data, selected_columns, 1)
+        chosen_column_for_predict = self.menu_data_prediction_name_column.currentText()
+        chosen_column_with_time_label = self.menu_time_label_name_column.currentText()
+        selected_columns = []
+        for row in range(self.table_widget.rowCount()):
+            item = self.table_widget.item(row, 0)
+            if item.checkState() == Qt.CheckState.Checked:
+                selected_columns.append(item.text())
+        prepared_data = util.data_preparation(self.selected_file, self.selected_sheet,
+                                              chosen_column_with_time_label, selected_columns)
+        data = util.create_lags(prepared_data, selected_columns, 1)
+        data_learn, data_test = util.separation_data(data, self.slider_box.value())
+        print(f"{len(data_learn)} - Длинна обучающей выборки ")
+        print(f"{len(data_test)} - Длинна тестовой выборки ")
+        model = util.create_model(data_learn, chosen_column_for_predict, selected_columns, 1)
+        result_data = util.predict_on_params(data, model.params, self.slider_box.value(), chosen_column_for_predict)
+        print(util.calculate_mape(result_data, chosen_column_for_predict))
+        print(util.write_to_excel(result_data, f"Prediction"))
+        super().accept()
 
-            super().accept()
-            #plot_window.exec()
-
-
-# class CreatedForecastWindow(QDialog):
 
 class DataSelectionDialogPlot(QDialog):
     """In this window is happening choosing data for creating predict model"""
-
     def __init__(self, column_names, selected_file, selected_sheet):
         super().__init__()
         self.selected_file = selected_file
@@ -280,15 +313,30 @@ class DataSelectionDialogPlot(QDialog):
         self.label_x = QLabel('Выберите данные для оси X:')
         self.menu_x = QComboBox()
         self.menu_x.addItems(column_names)
+        self.menu_x.currentIndexChanged.connect(self.update_table_widget)
         layout.addWidget(self.label_x)
         layout.addWidget(self.menu_x)
 
-        # Добавляем QLabel и QLineEdit для выбора данных по оси Y
+        # Добавляем QLabel и QTableWidget для выбора данных по оси Y
         self.label_y = QLabel('Выберите данные для оси Y:')
-        self.menu_y = QComboBox()
-        self.menu_y.addItems(column_names)
+        self.table_widget = QTableWidget()
+        self.table_widget.setColumnCount(1)
+        self.table_widget.setRowCount(len(column_names)-1)
+        self.table_widget.setHorizontalHeaderLabels(['Выбрать столбец'])
+        self.table_widget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        self.table_widget.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+
+        list_columns_name = list(column_names)
+        list_columns_name.remove(self.menu_x.currentText())
+
+        for i, column_name in enumerate(list_columns_name):
+            item = QTableWidgetItem(column_name)
+            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            item.setCheckState(Qt.CheckState.Unchecked)
+            self.table_widget.setItem(i, 0, item)
+
         layout.addWidget(self.label_y)
-        layout.addWidget(self.menu_y)
+        layout.addWidget(self.table_widget)
 
         # Кнопки "OK" и "Отмена"
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
@@ -300,32 +348,56 @@ class DataSelectionDialogPlot(QDialog):
 
     def get_selected_data(self):
         # Возвращаем выбранные данные по осям X и Y
-        print(self.menu_x.currentText())
-        print(self.menu_y.currentText())
-        return self.menu_x.currentText(), self.menu_y.currentText()
+        selected_x = self.menu_x.currentText()
+        selected_y = [self.table_widget.item(i, 0).text() for i in range(self.table_widget.rowCount())
+                      if self.table_widget.item(i, 0).checkState() == Qt.CheckState.Checked]
+        return selected_x, selected_y
+
+    def update_table_widget(self):
+        selected_x = self.menu_x.currentText()
+        list_columns_name = list(self.column_names)
+        list_columns_name.remove(selected_x)
+        # Очистка содержимого table_widget
+        self.table_widget.clearContents()
+
+        # Заполнение table_widget данными, исключая выбранный в menu_x
+        for i, column_name in enumerate(list_columns_name):
+            if column_name != selected_x:
+                item = QTableWidgetItem(column_name)
+                item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+                item.setCheckState(Qt.CheckState.Unchecked)
+                self.table_widget.setItem(i, 0, item)
+
+    def get_selected_data(self):
+        # Возвращаем выбранные данные по осям X и Y
+        selected_x = self.menu_x.currentText()
+        selected_y = [self.table_widget.item(i, 0).text() for i in range(self.table_widget.rowCount())
+                      if self.table_widget.item(i, 0).checkState() == Qt.CheckState.Checked]
+        return selected_x, selected_y
 
     def accept(self):
         selected_x, selected_y = self.get_selected_data()
+        print(selected_y)
 
         if selected_x and selected_y:
             # Создаем новый экземпляр PlotWindow с выбранными данными
             data = pd.read_excel(self.selected_file, sheet_name=self.selected_sheet)
-            plot_window = PlotWindow(data=data, column_names=[selected_x, selected_y])
+            plot_window = PlotWindow(data=data, x_column=selected_x, y_columns=selected_y)
             super().accept()
             plot_window.exec()
 
 
 class PlotWindow(QDialog):
     """In this window is happening choosing data for creating plot data"""
-    def __init__(self, data, column_names):
+
+    def __init__(self, data, x_column, y_columns):
         super().__init__()
         self.setWindowTitle('График')
         self.resize(1200, 800)
         try:
-            x = data[column_names[0]]
-            y = data[column_names[1]]
+            # Построение графика с несколькими y
+            fig = px.line(data, x=x_column, y=y_columns, title='Название графика')
 
-            fig = px.line(x=x, y=y, labels={'x': column_names[0], 'y': column_names[1]}, title='Название графика')
             # Создаем html-код фигуры
             html = '<html><body>'
             html += offline.plot(fig, output_type='div', include_plotlyjs='cdn')

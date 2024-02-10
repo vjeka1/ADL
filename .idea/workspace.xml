@@ -4,14 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1a5b54ef-6744-49c3-8d35-2e21e648b648" name="Changes" comment="Full project v. 0.0.3&#10;- A script was created for selecting &#10;influencing factors and a data column&#10;with time stamps to build a forecast.&#10;- Created ForecastWindow, DataSelectionDialog, FactorSelectionDialog.&#10;- Reworked FileSelectionApp.">
-      <change afterPath="$PROJECT_DIR$/utilities.py" afterDir="false" />
+    <list default="true" id="1a5b54ef-6744-49c3-8d35-2e21e648b648" name="Changes" comment="Full project v. 0.0.4&#10;- Optimized logic work visual part of &#10;choice model factors.&#10;- Created Utilities and few functions &#10;for prepare data before create prediction.">
+      <change afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/adl/ЭШ-20-90 №19.txt" beforeDir="false" afterPath="$PROJECT_DIR$/adl/ЭШ-20-90 №19.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/adl/ЭШ-20-90 №19.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/adl/ЭШ-20-90 №19.xlsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/adl/ЭШ-20-90 №29.txt" beforeDir="false" afterPath="$PROJECT_DIR$/adl/ЭШ-20-90 №29.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/adl/ЭШ-20-90 №29.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/adl/ЭШ-20-90 №29.xlsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utilities.py" beforeDir="false" afterPath="$PROJECT_DIR$/utilities.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,6 +44,27 @@
   }
 }</component>
   <component name="RunManager" selected="Python.main">
+    <configuration name="_chart_types" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="ADL_predicts" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../../Dev/Jupyter/dist/pyenv3.11-win64/Lib/site-packages/plotly/express" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/../../Dev/Jupyter/dist/pyenv3.11-win64/Lib/site-packages/plotly/express/_chart_types.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="forecast (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="ADL_predicts" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -68,27 +86,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="forecast" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="ADL_predicts" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="C:\Network\ADL_predicts\forecast.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="ADL_predicts" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -102,6 +99,27 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="ADL_predicts" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -134,9 +152,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.main" />
+        <item itemvalue="Python._chart_types" />
         <item itemvalue="Python.utilities" />
+        <item itemvalue="Python.test" />
         <item itemvalue="Python.forecast (1)" />
-        <item itemvalue="Python.forecast" />
       </list>
     </recent_temporary>
   </component>
@@ -165,7 +184,23 @@
       <option name="project" value="LOCAL" />
       <updated>1707338564692</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Full project v. 0.0.4&#10;- Optimized logic work visual part of choice model factors.&#10;- Created Utilities and few functions for prepare data before create prediction.">
+      <option name="closed" value="true" />
+      <created>1707425736160</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1707425736160</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Full project v. 0.0.4&#10;- Optimized logic work visual part of &#10;choice model factors.&#10;- Created Utilities and few functions &#10;for prepare data before create prediction.">
+      <option name="closed" value="true" />
+      <created>1707425793996</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1707425793996</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -182,6 +217,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Full project v. 0.0.2" />
     <MESSAGE value="Full project v. 0.0.3&#10;- A script was created for selecting &#10;influencing factors and a data column&#10;with time stamps to build a forecast.&#10;- Created ForecastWindow, DataSelectionDialog, FactorSelectionDialog.&#10;- Reworked FileSelectionApp." />
-    <option name="LAST_COMMIT_MESSAGE" value="Full project v. 0.0.3&#10;- A script was created for selecting &#10;influencing factors and a data column&#10;with time stamps to build a forecast.&#10;- Created ForecastWindow, DataSelectionDialog, FactorSelectionDialog.&#10;- Reworked FileSelectionApp." />
+    <MESSAGE value="Full project v. 0.0.4&#10;- Optimized logic work visual part of choice model factors.&#10;- Created Utilities and few functions for prepare data before create prediction." />
+    <MESSAGE value="Full project v. 0.0.4&#10;- Optimized logic work visual part of &#10;choice model factors.&#10;- Created Utilities and few functions &#10;for prepare data before create prediction." />
+    <option name="LAST_COMMIT_MESSAGE" value="Full project v. 0.0.4&#10;- Optimized logic work visual part of &#10;choice model factors.&#10;- Created Utilities and few functions &#10;for prepare data before create prediction." />
   </component>
 </project>
