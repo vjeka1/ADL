@@ -4,10 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1a5b54ef-6744-49c3-8d35-2e21e648b648" name="Changes" comment="Full project v. 0.0.4&#10;- Optimized logic work visual part of &#10;choice model factors.&#10;- Created Utilities and few functions &#10;for prepare data before create prediction.">
-      <change afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
+    <list default="true" id="1a5b54ef-6744-49c3-8d35-2e21e648b648" name="Changes" comment="Full project v. 0.0.5&#10;- Optimized logic work visual part of &#10;choice model factors and choice of predict column.&#10;- Created Utilities and few functions &#10;for create predict and write data after create predict.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/forecast.py" beforeDir="false" afterPath="$PROJECT_DIR$/forecast.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utilities.py" beforeDir="false" afterPath="$PROJECT_DIR$/utilities.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -24,6 +25,20 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;vjeka1&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">
+    <option name="selectedUrlAndAccountId">
+      <UrlAndAccount>
+        <option name="accountId" value="02010f78-1e21-41e6-a6c3-4dad77807748" />
+        <option name="url" value="https://github.com/vjeka1/ADL.git" />
+      </UrlAndAccount>
+    </option>
   </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
@@ -152,9 +167,9 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.main" />
+        <item itemvalue="Python.test" />
         <item itemvalue="Python._chart_types" />
         <item itemvalue="Python.utilities" />
-        <item itemvalue="Python.test" />
         <item itemvalue="Python.forecast (1)" />
       </list>
     </recent_temporary>
@@ -200,7 +215,15 @@
       <option name="project" value="LOCAL" />
       <updated>1707425793996</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Full project v. 0.0.5&#10;- Optimized logic work visual part of &#10;choice model factors and choice of predict column.&#10;- Created Utilities and few functions &#10;for create predict and write data after create predict.">
+      <option name="closed" value="true" />
+      <created>1707590844801</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1707590844801</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -219,6 +242,7 @@
     <MESSAGE value="Full project v. 0.0.3&#10;- A script was created for selecting &#10;influencing factors and a data column&#10;with time stamps to build a forecast.&#10;- Created ForecastWindow, DataSelectionDialog, FactorSelectionDialog.&#10;- Reworked FileSelectionApp." />
     <MESSAGE value="Full project v. 0.0.4&#10;- Optimized logic work visual part of choice model factors.&#10;- Created Utilities and few functions for prepare data before create prediction." />
     <MESSAGE value="Full project v. 0.0.4&#10;- Optimized logic work visual part of &#10;choice model factors.&#10;- Created Utilities and few functions &#10;for prepare data before create prediction." />
-    <option name="LAST_COMMIT_MESSAGE" value="Full project v. 0.0.4&#10;- Optimized logic work visual part of &#10;choice model factors.&#10;- Created Utilities and few functions &#10;for prepare data before create prediction." />
+    <MESSAGE value="Full project v. 0.0.5&#10;- Optimized logic work visual part of &#10;choice model factors and choice of predict column.&#10;- Created Utilities and few functions &#10;for create predict and write data after create predict." />
+    <option name="LAST_COMMIT_MESSAGE" value="Full project v. 0.0.5&#10;- Optimized logic work visual part of &#10;choice model factors and choice of predict column.&#10;- Created Utilities and few functions &#10;for create predict and write data after create predict." />
   </component>
 </project>

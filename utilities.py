@@ -1,12 +1,12 @@
 import datetime
-
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 import os
+import re
 
 
-def data_preparation(file, sheet, name_column_time, name_column_factors):
+def data_preparation(file, sheet, name_column_time, name_column_for_predict, name_column_factors):
     """
     Подготавливает данные из файла Excel.
 
@@ -36,6 +36,12 @@ def data_preparation(file, sheet, name_column_time, name_column_factors):
     # Собираем все данные в один DataFrame
     result_df = pd.concat(result_data, axis=1)
 
+    # Проверяем, есть ли в результирующих данных столбец, который мы планируем прогнозировать
+    if name_column_for_predict not in result_df.columns:
+        # Преобразование времени
+        result_df.append(data[name_column_for_predict])
+
+
     # Удаление строк, где значение в столбце name_column_time отличается от дд.мм.гггг
     result_df[name_column_time] = pd.to_datetime(result_df[name_column_time], format='%d.%m.%Y', errors='coerce')
     result_df = result_df.dropna(subset=[name_column_time])
@@ -46,7 +52,7 @@ def data_preparation(file, sheet, name_column_time, name_column_factors):
     return result_df
 
 
-def create_lags(data, columns, lag_count):
+def create_lags(data, columns, lag_count, need_create_lag_for_predictable, chosen_column_for_predict):
     """
     Создает лаги для указанных столбцов данных.
 
@@ -58,8 +64,15 @@ def create_lags(data, columns, lag_count):
     Returns:
     - DataFrame, обновленные данные с добавленными лагами
     """
+
+    columns_for_created_lags = columns
+
+    # Проверка необходимости создания лага для предсказываемых значений
+    if not need_create_lag_for_predictable:
+        columns_for_created_lags.remove(chosen_column_for_predict)
+
     # Проходим по каждому столбцу
-    for column in columns:
+    for column in columns_for_created_lags:
         # Создаем лаги для каждого столбца
         for lag in range(1, lag_count + 1):
             # Формируем имя нового столбца с учетом лага
@@ -102,7 +115,8 @@ def create_model(data, column_for_predict, column_factors, lag_count):
             all_factors.append(lag_column_name)
 
     # Удаляем столбец, который мы хотим предсказать
-    all_factors.remove(column_for_predict)
+    if column_for_predict in all_factors:
+        all_factors.remove(column_for_predict)
 
     # Выводим в консоль для проверки
     print(all_factors)
@@ -112,7 +126,6 @@ def create_model(data, column_for_predict, column_factors, lag_count):
     X = data[all_factors]
     X = sm.add_constant(X)
     y = data[column_for_predict]
-
     # Оценка параметров с использованием МНК
     model = sm.OLS(y, X).fit()
 
@@ -139,6 +152,7 @@ def separation_data(data, percent):
 
     return data_learn, data_test
 
+
 def calculate_mape(df, actual_column):
     """
     Рассчитывает коэффициент MAPE (Mean Absolute Percentage Error) для прогноза и добавляет его в DataFrame.
@@ -155,7 +169,8 @@ def calculate_mape(df, actual_column):
     forecast_column = f'Прогноз {actual_column}'
 
     # Рассчитываем MAPE для каждой строки в DataFrame
-    df['MAPE'] = np.where(df[actual_column] != 0, abs((df[actual_column] - df[forecast_column]) / df[actual_column]) * 100, 0)
+    df['MAPE'] = np.where(df[actual_column] != 0,
+                          abs((df[actual_column] - df[forecast_column]) / df[actual_column]) * 100, 0)
 
     # Рассчитываем среднее значение MAPE
     average_mape = df['MAPE'].mean()
@@ -163,7 +178,7 @@ def calculate_mape(df, actual_column):
     return average_mape
 
 
-def predict_on_params(data, params_train, len_dataset_learn, chosen_column_for_predict):
+def learn_on_params(data, params_train, len_dataset_learn, chosen_column_for_predict):
     """
     Прогнозирует значения на основе обученных параметров для заданного процента тестовых данных.
 
@@ -192,17 +207,58 @@ def predict_on_params(data, params_train, len_dataset_learn, chosen_column_for_p
     # Добавление прогнозных значений в DataFrame
     data[f'Прогноз {chosen_column_for_predict}'] = forecast_values
 
-    # Создание метки, где обучающая выборка, где тестовая
-    data.loc[0:split_index-1, 'Тип данных'] = 'Обучающая'
+    # Присвоение значения для обучающей выборки
+    data.loc[0:split_index - 1, 'Тип данных'] = 'Обучающая'
 
-    # Присвоение значения для оставшейся части данных (test_data)
+    # Присвоение значения для тестовой выборки
     data.loc[split_index:, 'Тип данных'] = 'Тестовая'
+
+    # Преобразование столбца 'Тип данных' к строковому типу
+    data['Тип данных'] = data['Тип данных'].astype(str)
 
     return data
 
+def process_sheet_name(sheet_name):
+    # Проверка на пустоту
+    if not sheet_name:
+        return "PredictionSheetName"
+
+    # Проверка на длину
+    if len(sheet_name) > 31:
+        return "PredictionSheetName"
+
+    # Замена запрещенных символов на "_"
+    forbidden_characters = r'/\?*:[]'
+    sheet_name = ''.join('_' if char in forbidden_characters else char for char in sheet_name)
+
+    # Замена начала или конца на "_", если не были удалены апострофы
+    sheet_name = sheet_name.strip("'") + '_'
+
+    # Замена зарезервированного слова "History"
+    if sheet_name.lower() == 'History':
+        return 'PredictionSheetName'
+
+    # Замена апострофов между символами на "_"
+    sheet_name = sheet_name.replace("''", '_')
+
+    # Прошли все проверки, возвращаем обработанное имя листа
+    return sheet_name
 
 
-def write_to_excel(data, output_file, output_directory=None, file_format="xlsx"):
+
+def process_string_filename(input_string):
+
+    # Заменяем указанные символы на нижнее подчеркивание
+    invalid_chars = r'[\ / : * ? " < > | + . , _]'
+    processed_string = re.sub(invalid_chars, '_', input_string)
+
+    # Заменяем два подряд нижних подчеркивания на одно
+    processed_string = re.sub(r'_{2,}', '_', processed_string)
+
+    return processed_string
+
+
+def write_to_excel(data, output_file, output_directory=None, file_format="xlsx", sheet="Prediction"):
     """
     Записывает данные в файл Excel или CSV.
 
@@ -217,6 +273,16 @@ def write_to_excel(data, output_file, output_directory=None, file_format="xlsx")
     """
 
     try:
+        # Обработка имени файла
+        if not output_file.startswith('Prediction '):
+            output_file = 'Prediction ' + output_file
+        output_file = process_string_filename(output_file)
+
+        # Обработка имени листа
+        if not sheet.startswith('Prediction '):
+            sheet = 'Prediction ' + sheet
+        sheet = process_sheet_name(sheet)
+
         # Если не указана директория, используем текущую
         current_directory = output_directory or os.getcwd()
 
@@ -224,25 +290,24 @@ def write_to_excel(data, output_file, output_directory=None, file_format="xlsx")
         os.makedirs(current_directory, exist_ok=True)
 
         # Формируем имя файла с использованием префикса и текущей даты/времени
-        current_datetime = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        file_name = f"{output_file}_{current_datetime}"
+        current_datetime = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        file_name = f'{output_file}_{current_datetime}'
 
         # Выбираем формат файла
-        file_extension = "xlsx" if file_format.lower() == "xlsx" else "csv"
+        file_extension = 'xlsx' if file_format.lower() == 'xlsx' else 'csv'
 
         # Составляем полный путь к файлу в текущей директории с учетом формата
-        full_path = os.path.join(current_directory, f"{file_name}.{file_extension}")
-
+        full_path = os.path.join(current_directory, f'{file_name}.{file_extension}')
         # Записываем данные в файл
-        if file_extension == "xlsx":
-            data.to_excel(full_path, index=False)
-        elif file_extension == "csv":
-            data.to_csv(full_path, index=False)
+        if file_extension == 'xlsx':
+            data.to_excel(full_path, sheet_name=sheet, index=False)
+        elif file_extension == 'csv':
+            data.to_csv(full_path, sheet_name=sheet, index=False)
 
-        result_write = f"Данные успешно записаны в файл: {full_path}"
+        result_write = dict()
+        result_write['Result'] = True
+        result_write['Path'] = full_path
     except Exception as e:
-        result_write = f"Ошибка при записи данных в файл: {e}"
+        result_write['Result'] = False
 
     return result_write
-
-

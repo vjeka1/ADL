@@ -1,23 +1,16 @@
-import os
+import subprocess
 import sys
-import datetime
-import numpy as np
 import plotly.offline as offline
 import pandas as pd
 import plotly.express as px
-import matplotlib as mp
-import sympy as sp
+import logging
+import utilities as util
 from PyQt6.QtCore import *
-from PyQt6.QtSvgWidgets import QSvgWidget
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
-from matplotlib_inline.backend_inline import FigureCanvas
 from openpyxl.reader.excel import load_workbook
 
-from forecast import main_import_file
-from matplotlib.figure import Figure
-import utilities as util
 
 
 class FileSelectionApp(QMainWindow):
@@ -47,11 +40,18 @@ class FileSelectionApp(QMainWindow):
         self.select_sheet_button.clicked.connect(self.choose_excel_sheet)
         layout.addWidget(self.select_sheet_button)
 
+        # Создаем кнопку для создания модели
+        self.create_model_on_chosen_file = QPushButton('Создать модель для прогнозирования')
+        self.create_model_on_chosen_file.setEnabled(False)
+        # Используем lambda-функцию, чтобы передать параметр
+        self.create_model_on_chosen_file.clicked.connect(self.create_short_term_prediction_model)
+        layout.addWidget(self.create_model_on_chosen_file)
+
         # Создаем кнопку для создания прогноза
         self.create_prediction_on_chosen_file = QPushButton('Создать прогноз')
         self.create_prediction_on_chosen_file.setEnabled(False)
         # Используем lambda-функцию, чтобы передать параметр
-        self.create_prediction_on_chosen_file.clicked.connect(self.create_short_term_prediction)
+        # self.create_prediction_on_chosen_file.clicked.connect()
         layout.addWidget(self.create_prediction_on_chosen_file)
 
         # Создаем кнопку для создания графика
@@ -92,10 +92,6 @@ class FileSelectionApp(QMainWindow):
         file_menu_action.setMenu(file_menu)
         menu_bar.addAction(file_menu_action)
 
-    def create_prediction(self):
-        if self.selected_file and self.selected_sheet:
-            main_import_file(self.selected_file, self.selected_sheet)
-
     def open_file_and_choose_sheet(self):
         try:
             # Открываем диалог выбора файла и фильтра для Excel
@@ -110,7 +106,7 @@ class FileSelectionApp(QMainWindow):
             if selected_file.endswith('.xlsx'):
                 self.selected_file = selected_file
                 self.select_sheet_button.setEnabled(True)
-                self.create_prediction_on_chosen_file.setEnabled(True)
+                self.create_model_on_chosen_file.setEnabled(True)
                 self.create_prediction_graph.setEnabled(True)
                 self.choose_excel_sheet()
 
@@ -124,6 +120,7 @@ class FileSelectionApp(QMainWindow):
 
             # Используем QInputDialog для выбора листа
             input_dialog = QInputDialog(self)
+            input_dialog.setLabelText('Выберите лист:')
             input_dialog.setWindowTitle('Выбор листа')
             input_dialog.setComboBoxItems(sheet_names)
             input_dialog.setComboBoxEditable(False)
@@ -180,21 +177,21 @@ class FileSelectionApp(QMainWindow):
         except Exception as e:
             print(f"Ошибка при запуске диалогового окна выбора осей графика: {e}")
 
-    def create_short_term_prediction(self):
+    def create_short_term_prediction_model(self):
         try:
             if self.selected_file and self.selected_sheet:
                 column_names = [self.table_widget.horizontalHeaderItem(j).text() for j in
                                 range(self.table_widget.columnCount())]
 
                 # Создаем новый экземпляр DataSelectionDialog
-                data_selection_dialog = ForecastWindow(column_names=column_names, selected_file=self.selected_file,
+                data_selection_dialog = ModelWindow(column_names=column_names, selected_file=self.selected_file,
                                                        selected_sheet=self.selected_sheet)
                 data_selection_dialog.exec()
         except Exception as e:
             print(f"Ошибка при запуске диалогового окна выбора настройки создания прогноза: {e}")
 
 
-class ForecastWindow(QDialog):
+class ModelWindow(QDialog):
     """In this window created predicts"""
 
     def __init__(self, column_names, selected_file, selected_sheet):
@@ -203,7 +200,7 @@ class ForecastWindow(QDialog):
         self.column_names = column_names
         self.selected_file = selected_file
         self.selected_sheet = selected_sheet
-        self.setWindowTitle('Выбор данных для создания прогноза')
+        self.setWindowTitle('Выбор данных для создания модели')
         self.adjustSize()
 
         layout = QVBoxLayout()
@@ -227,6 +224,9 @@ class ForecastWindow(QDialog):
         self.slider_box.setValue(66)
         self.percent_label = QLabel("Обучающая выборка: 66% Тестовая выборка: 34%")
         self.slider_box.valueChanged.connect(self.slider_value_changed)
+
+        self.label_5 = QLabel('Количество дней прогнозирования:')
+        self.forecast_days_input = QLineEdit()
 
         # Добавляем QTableWidget для выбора факторов
         self.table_widget = QTableWidget()
@@ -257,12 +257,14 @@ class ForecastWindow(QDialog):
         layout.addWidget(self.label_4)
         layout.addWidget(self.slider_box)
         layout.addWidget(self.percent_label)
+        layout.addWidget(self.label_5)
+        layout.addWidget(self.forecast_days_input)
         layout.addWidget(buttons)
 
         self.setLayout(layout)
 
     def slider_value_changed(self, value):
-        self.percent_label.setText(f"Обучающая выборка: {value}% Тестовая выборка: {100-value}%")
+        self.percent_label.setText(f"Обучающая выборка: {value}% Тестовая выборка: {100 - value}%")
 
     def handle_item_changed(self):
         checked_count = (1 for row in range(self.table_widget.rowCount()) if
@@ -278,28 +280,75 @@ class ForecastWindow(QDialog):
             print(f"Exception occurred: {e}")
 
     def accept(self):
-        chosen_column_for_predict = self.menu_data_prediction_name_column.currentText()
-        chosen_column_with_time_label = self.menu_time_label_name_column.currentText()
-        selected_columns = []
-        for row in range(self.table_widget.rowCount()):
-            item = self.table_widget.item(row, 0)
-            if item.checkState() == Qt.CheckState.Checked:
-                selected_columns.append(item.text())
-        prepared_data = util.data_preparation(self.selected_file, self.selected_sheet,
-                                              chosen_column_with_time_label, selected_columns)
-        data = util.create_lags(prepared_data, selected_columns, 1)
-        data_learn, data_test = util.separation_data(data, self.slider_box.value())
-        print(f"{len(data_learn)} - Длинна обучающей выборки ")
-        print(f"{len(data_test)} - Длинна тестовой выборки ")
-        model = util.create_model(data_learn, chosen_column_for_predict, selected_columns, 1)
-        result_data = util.predict_on_params(data, model.params, self.slider_box.value(), chosen_column_for_predict)
-        print(util.calculate_mape(result_data, chosen_column_for_predict))
-        print(util.write_to_excel(result_data, f"Prediction"))
-        super().accept()
+        try:
+            chosen_column_for_predict = self.menu_data_prediction_name_column.currentText()
+            chosen_column_with_time_label = self.menu_time_label_name_column.currentText()
+            count_forecast_days = self.forecast_days_input.text()
+            selected_columns = []
+
+            for row in range(self.table_widget.rowCount()):
+                item = self.table_widget.item(row, 0)
+                if item is not None and item.checkState() == Qt.CheckState.Checked:
+                    selected_columns.append(item.text())
+
+            if chosen_column_for_predict in selected_columns:
+                create_lag_for_chosen_column_for_predict = True
+            else:
+                create_lag_for_chosen_column_for_predict = False
+                selected_columns.append(chosen_column_for_predict)
+
+            prepared_data = util.data_preparation(
+                file=self.selected_file,
+                sheet=self.selected_sheet,
+                name_column_time=chosen_column_with_time_label,
+                name_column_for_predict=chosen_column_for_predict,
+                name_column_factors=selected_columns
+            )
+
+            data = util.create_lags(
+                prepared_data,
+                selected_columns,
+                1,
+                create_lag_for_chosen_column_for_predict,
+                chosen_column_for_predict
+            )
+
+            data_learn, data_test = util.separation_data(data, self.slider_box.value())
+            print(f"{len(data_learn)} - Длинна обучающей выборки ")
+            print(f"{len(data_test)} - Длинна тестовой выборки ")
+
+            model = util.create_model(data_learn, chosen_column_for_predict, selected_columns, 1)
+            result_data = util.learn_on_params(data, model.params, self.slider_box.value(), chosen_column_for_predict)
+            util.calculate_mape(result_data, chosen_column_for_predict)
+            result_write_file = util.write_to_excel(
+                result_data,
+                output_file=chosen_column_for_predict,
+                sheet=chosen_column_for_predict
+            )
+
+            if result_write_file['Result']:
+                question_box = QuestionMessageBox("Открыть созданный файл?", self)
+                should_open_file = question_box.exec_and_get_result()
+                if should_open_file:
+                    subprocess.run(["start", "excel", result_write_file['Path']], shell=True)
+                else:
+                    pass
+            else:
+                error_message = ErrorMessageBox('Ошибка записи файла', self)
+            super().accept()
+
+        except Exception as e:
+            # Здесь уточните тип исключения, например: except ValueError as e:
+            print(f"Произошла ошибка: {e}")
+
+
+
+
 
 
 class DataSelectionDialogPlot(QDialog):
     """In this window is happening choosing data for creating predict model"""
+
     def __init__(self, column_names, selected_file, selected_sheet):
         super().__init__()
         self.selected_file = selected_file
@@ -321,7 +370,7 @@ class DataSelectionDialogPlot(QDialog):
         self.label_y = QLabel('Выберите данные для оси Y:')
         self.table_widget = QTableWidget()
         self.table_widget.setColumnCount(1)
-        self.table_widget.setRowCount(len(column_names)-1)
+        self.table_widget.setRowCount(len(column_names) - 1)
         self.table_widget.setHorizontalHeaderLabels(['Выбрать столбец'])
         self.table_widget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         self.table_widget.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
@@ -414,6 +463,29 @@ class PlotWindow(QDialog):
 
         except Exception as e:
             print(f"Ошибка при отображении графика: {e}")
+
+
+class ErrorMessageBox(QMessageBox):
+    def __init__(self, error_message, parent=None):
+        super().__init__(parent)
+        self.setIcon(QMessageBox.Icon.Critical)
+        self.setWindowTitle('Ошибка')
+        self.setText('Произошла ошибка')
+        self.setInformativeText(error_message)
+        self.setStandardButtons(QMessageBox.StandardButton.Ok)
+
+
+class QuestionMessageBox(QMessageBox):
+    def __init__(self, question_text, parent=None):
+        super().__init__(parent)
+        self.setIcon(QMessageBox.Icon.Question)
+        self.setText(question_text)
+        self.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        self.setDefaultButton(QMessageBox.StandardButton.Yes)
+
+    def exec_and_get_result(self):
+        result = self.exec()
+        return result == QMessageBox.StandardButton.Yes
 
 
 if __name__ == "__main__":
