@@ -4,11 +4,24 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1a5b54ef-6744-49c3-8d35-2e21e648b648" name="Changes" comment="Full project v. 0.0.5&#10;- Optimized logic work visual part of &#10;choice model factors and choice of predict column.&#10;- Created Utilities and few functions &#10;for create predict and write data after create predict.">
+    <list default="true" id="1a5b54ef-6744-49c3-8d35-2e21e648b648" name="Changes" comment="Full project v. 0.0.7&#10;- Сompiled executable file (prepared files for created executable file).&#10;- Removed unnecessary files from the project.">
+      <change afterPath="$PROJECT_DIR$/output/main.exe" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/forecast.py" beforeDir="false" afterPath="$PROJECT_DIR$/forecast.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/1.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/2.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/adl/ЭШ-20-90 №19.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/adl/ЭШ-20-90 №19.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/adl/ЭШ-20-90 №19.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/adl/ЭШ-20-90 №29.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/adl/ЭШ-20-90 №29.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/adl/ЭШ-20-90 №29.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/main/base_library.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/forecast.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.spec" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/map.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/plotly_plot.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/utilities.py" beforeDir="false" afterPath="$PROJECT_DIR$/utilities.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -50,14 +63,16 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Network/ADL_predicts&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "C:/Network/25-02-2024_14-02-45/model_dob.py",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
-}</component>
+}]]></component>
   <component name="RunManager" selected="Python.main">
     <configuration name="_chart_types" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="ADL_predicts" />
@@ -223,7 +238,23 @@
       <option name="project" value="LOCAL" />
       <updated>1707590844801</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Full project v. 0.0.6&#10;- Fixed a bug when creating a model without using the series that is planned to be predicted.&#10;- Added menus for opening files when creating a model.&#10;- A button for creating a forecast has been added, as well as an input field for the length of the forecast.">
+      <option name="closed" value="true" />
+      <created>1707768112188</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1707768112188</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Full project v. 0.0.7&#10;- Сompiled executable file (prepared files for created executable file).&#10;- Removed unnecessary files from the project.">
+      <option name="closed" value="true" />
+      <created>1708887032830</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1708887032830</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -243,6 +274,9 @@
     <MESSAGE value="Full project v. 0.0.4&#10;- Optimized logic work visual part of choice model factors.&#10;- Created Utilities and few functions for prepare data before create prediction." />
     <MESSAGE value="Full project v. 0.0.4&#10;- Optimized logic work visual part of &#10;choice model factors.&#10;- Created Utilities and few functions &#10;for prepare data before create prediction." />
     <MESSAGE value="Full project v. 0.0.5&#10;- Optimized logic work visual part of &#10;choice model factors and choice of predict column.&#10;- Created Utilities and few functions &#10;for create predict and write data after create predict." />
-    <option name="LAST_COMMIT_MESSAGE" value="Full project v. 0.0.5&#10;- Optimized logic work visual part of &#10;choice model factors and choice of predict column.&#10;- Created Utilities and few functions &#10;for create predict and write data after create predict." />
+    <MESSAGE value="Full project v. 0.0.6&#10;- Fixed a bug when creating a model without using the series that is planned to be predicted.&#10;- Added menus for opening files when creating a model.&#10;- A button for creating a forecast has been added, as well as an input field for the length of the forecast." />
+    <MESSAGE value="Full project v. 0.0.7&#10;- Сompiled executable file.&#10;- Removed unnecessary files from the project." />
+    <MESSAGE value="Full project v. 0.0.7&#10;- Сompiled executable file (prepared files for created executable file).&#10;- Removed unnecessary files from the project." />
+    <option name="LAST_COMMIT_MESSAGE" value="Full project v. 0.0.7&#10;- Сompiled executable file (prepared files for created executable file).&#10;- Removed unnecessary files from the project." />
   </component>
 </project>

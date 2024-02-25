@@ -166,6 +166,7 @@ def calculate_mape(df, actual_column):
     - float. Среднее значение коэффициента MAPE.
     """
 
+
     forecast_column = f'Прогноз {actual_column}'
 
     # Рассчитываем MAPE для каждой строки в DataFrame
