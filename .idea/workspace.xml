@@ -6,23 +6,13 @@
   <component name="ChangeListManager">
     <list default="true" id="1a5b54ef-6744-49c3-8d35-2e21e648b648" name="Changes" comment="Full project v. 0.0.7&#10;- Сompiled executable file (prepared files for created executable file).&#10;- Removed unnecessary files from the project.">
       <change afterPath="$PROJECT_DIR$/output/main.exe" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/ADL_predicts.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ADL_predicts.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/1.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/2.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/adl/ЭШ-20-90 №19.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/adl/ЭШ-20-90 №19.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/adl/ЭШ-20-90 №19.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/adl/ЭШ-20-90 №29.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/adl/ЭШ-20-90 №29.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/adl/ЭШ-20-90 №29.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/main/base_library.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/forecast.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.spec" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/map.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/plotly_plot.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utilities.py" beforeDir="false" afterPath="$PROJECT_DIR$/utilities.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Бестранспортная вскрыша_Сутки.xlsx" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,16 +53,16 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/Network/25-02-2024_14-02-45/model_dob.py",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Network/25-02-2024_14-02-45/model_dob.py&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="Python.main">
     <configuration name="_chart_types" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="ADL_predicts" />
@@ -182,9 +172,9 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.main" />
+        <item itemvalue="Python.utilities" />
         <item itemvalue="Python.test" />
         <item itemvalue="Python._chart_types" />
-        <item itemvalue="Python.utilities" />
         <item itemvalue="Python.forecast (1)" />
       </list>
     </recent_temporary>
@@ -254,7 +244,15 @@
       <option name="project" value="LOCAL" />
       <updated>1708887032830</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Full project v. 0.0.7&#10;- Сompiled executable file (prepared files for created executable file).&#10;- Removed unnecessary files from the project.">
+      <option name="closed" value="true" />
+      <created>1708887217441</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1708887217441</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">

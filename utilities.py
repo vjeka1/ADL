@@ -41,13 +41,11 @@ def data_preparation(file, sheet, name_column_time, name_column_for_predict, nam
         # Преобразование времени
         result_df.append(data[name_column_for_predict])
 
-
     # Удаление строк, где значение в столбце name_column_time отличается от дд.мм.гггг
     result_df[name_column_time] = pd.to_datetime(result_df[name_column_time], format='%d.%m.%Y', errors='coerce')
     result_df = result_df.dropna(subset=[name_column_time])
 
-    # Вывод полученного DataFrame (можно удалить)
-    print(result_df)
+    result_df.reset_index(drop=True, inplace=True)  # Переиндексируем DataFrame
 
     return result_df
 
@@ -83,13 +81,10 @@ def create_lags(data, columns, lag_count, need_create_lag_for_predictable, chose
     # Заменяем пропущенные значения в данных на 0
     data = data.fillna(0)
 
-    # Выводим обновленные данные (можно удалить в финальной версии)
-    print(data)
-
     return data
 
 
-def create_model(data, column_for_predict, column_factors, lag_count):
+def create_model(data, column_for_predict, column_factors, lag_count=1):
     """
     Создает и обучает модель на основе данных.
 
@@ -119,8 +114,8 @@ def create_model(data, column_for_predict, column_factors, lag_count):
         all_factors.remove(column_for_predict)
 
     # Выводим в консоль для проверки
-    print(all_factors)
-    print(column_for_predict)
+    # print(all_factors)
+    # print(column_for_predict)
 
     # Создание матрицы X и вектора Y
     X = data[all_factors]
@@ -166,7 +161,6 @@ def calculate_mape(df, actual_column):
     - float. Среднее значение коэффициента MAPE.
     """
 
-
     forecast_column = f'Прогноз {actual_column}'
 
     # Рассчитываем MAPE для каждой строки в DataFrame
@@ -196,7 +190,7 @@ def learn_on_params(data, params_train, len_dataset_learn, chosen_column_for_pre
     forecast_values = []
 
     # Извлечение выбранных параметров из params_train
-    const_param = params_train['const']
+    const_param = params_train.get('const', 0)
     selected_params = list(params_train.keys())[1:]  # Исключаем 'const'
 
     # Прогнозирование для каждой строки в тестовой выборке
@@ -218,6 +212,58 @@ def learn_on_params(data, params_train, len_dataset_learn, chosen_column_for_pre
     data['Тип данных'] = data['Тип данных'].astype(str)
 
     return data
+
+
+def create_predict_one_day(data, params_train, chosen_column_for_predict):
+    # Создаем копию последней строки
+    new_row = data.iloc[-1].copy()
+
+    # Извлекаем выбранные параметры из params_train
+    const_param = params_train.get('const', 0)
+    selected_params = list(params_train.keys())[1:]  # Исключаем 'const'
+
+    # Прогнозирование для последней строки
+    forecast = const_param + sum(params_train[param] * new_row[param] for param in selected_params)
+
+    # Добавляем значение прогноза в столбец
+    new_column_name = f'Прогноз {chosen_column_for_predict}'
+    data[new_column_name].iloc[-1] = forecast
+
+    # Маркируем тип данных как 'Прогноз 1-го дня'
+    data['Тип данных'].iloc[-1] = 'Прогноз 1-го дня'
+
+    # Маркировка столбцов, которые испльзкуются в качестве фактора в модели *название*'_P'
+    data = rename_columns_with_suffix(data, selected_params)
+
+    return data
+
+
+# def create_predict_one_day(data, params_train, chosen_column_for_predict):
+#     df = data.copy()  # Создаем копию DataFrame
+#     df.loc[df.index[-1] + 1] = df.iloc[-1]  # Добавляем последнюю строку в конец
+#     df.reset_index(drop=True, inplace=True)  # Переиндексируем DataFrame
+#
+#     # Извлекаем выбранные параметры из params_train
+#     const_param = params_train.get('const', 0)
+#     selected_params = list(params_train.keys())[1:]  # Исключаем 'const'
+#
+#     # Прогнозирование для последней строки
+#     forecast = const_param + sum(params_train[param] * df.at[df.index[-1], param] for param in selected_params)
+#
+#     df[f'Прогноз {chosen_column_for_predict}'].iloc[-1] = forecast
+#
+#     # Маркировка столбцов, которые испльзкуются в качестве фактора в модели *название*'_P'
+#     df = rename_columns_with_suffix(df, selected_params)
+#
+#     return df
+
+
+
+def rename_columns_with_suffix(df, chosen_column):
+    column_mapping = {column: column + "_P" for column in chosen_column}
+    df.rename(columns=column_mapping, inplace=True)
+    return df
+
 
 def process_sheet_name(sheet_name):
     # Проверка на пустоту
@@ -246,9 +292,7 @@ def process_sheet_name(sheet_name):
     return sheet_name
 
 
-
 def process_string_filename(input_string):
-
     # Заменяем указанные символы на нижнее подчеркивание
     invalid_chars = r'[\ / : * ? " < > | + . , _]'
     processed_string = re.sub(invalid_chars, '_', input_string)
