@@ -143,12 +143,18 @@ class ModelWindow(QDialog):
         self.setWindowTitle('Выбор данных для создания модели')
         self.adjustSize()
         layout = QVBoxLayout()
+
         self.label_1 = QLabel('Выберите столбец, для которого необходимо составить прогнозную модель:')
         self.menu_data_prediction_name_column = QComboBox()
         self.menu_data_prediction_name_column.addItems(self.column_names)
+
+        # Временные данные
         self.label_2 = QLabel('Выберите столбец данных с временными метками:')
+        self.label_6 = QLabel('Выберите шаг временного ряда:')
         self.menu_time_label_name_column = QComboBox()
+        self.time_step_combo_box = QComboBox()
         self.menu_time_label_name_column.addItems(self.column_names)
+
         self.label_3 = QLabel('Выберите до 3-ёх факторов прогнозной модели:')
         self.label_4 = QLabel("Выберите размер тестовой выборки:")
         self.slider_box = QSlider()
@@ -157,12 +163,13 @@ class ModelWindow(QDialog):
         self.slider_box.setOrientation(Qt.Orientation.Horizontal)
         self.slider_value = 66
         self.slider_box.setValue(self.slider_value)
-        self.percent_label = QLabel(f"Обучающая выборка: {self.slider_value}% Тестовая выборка: {100-self.slider_value}%")
+        self.percent_label = QLabel(
+            f"Обучающая выборка: {self.slider_value}% Тестовая выборка: {100 - self.slider_value}%")
         self.slider_box.valueChanged.connect(self.slider_value_changed)
         self.label_5 = QLabel('Количество дней прогнозирования:')
         self.table_widget = QTableWidget()
         self.table_widget.setColumnCount(1)
-        self.table_widget.setRowCount(len(column_names)-1)
+        self.table_widget.setRowCount(len(column_names) - 1)
         self.table_widget.setHorizontalHeaderLabels(['Выбрать столбец'])
         self.table_widget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         self.table_widget.itemChanged.connect(self.handle_item_changed)
@@ -172,16 +179,30 @@ class ModelWindow(QDialog):
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
+
+        self.init_combobox_time_step()
+
+        # Компоновка временных данных
+        time_layout = QHBoxLayout()
+        time_row_vbox = QVBoxLayout()
+        time_step_vbox = QVBoxLayout()
+        time_row_vbox.addWidget(self.label_2)
+        time_row_vbox.addWidget(self.menu_time_label_name_column)
+        time_step_vbox.addWidget(self.label_6)
+        time_step_vbox.addWidget(self.time_step_combo_box)
+        time_layout.addLayout(time_row_vbox)
+        time_layout.addLayout(time_step_vbox)
+
         layout.addWidget(self.label_1)
         layout.addWidget(self.menu_data_prediction_name_column)
-        layout.addWidget(self.label_2)
-        layout.addWidget(self.menu_time_label_name_column)
+        layout.addLayout(time_layout)
         layout.addWidget(self.label_3)
         layout.addWidget(self.table_widget)
         layout.addWidget(self.label_4)
         layout.addWidget(self.slider_box)
         layout.addWidget(self.percent_label)
         layout.addWidget(buttons)
+
         self.setLayout(layout)
 
     def update_table_widget(self):
@@ -195,6 +216,10 @@ class ModelWindow(QDialog):
             item.setCheckState(Qt.CheckState.Unchecked)
             self.table_widget.setItem(i, 0, item)
 
+    def init_combobox_time_step(self):
+        self.time_step_combo_box.addItem('%d.%m.%Y')
+        self.time_step_combo_box.addItem('%d %b %Y %H:%M:%S')
+
     def slider_value_changed(self, value):
         self.percent_label.setText(f"Обучающая выборка: {value}% Тестовая выборка: {100 - value}%")
 
@@ -203,11 +228,11 @@ class ModelWindow(QDialog):
                          self.table_widget.item(row, 0).checkState() == Qt.CheckState.Checked)
         try:
             checked_count_sum = sum(checked_count)
-            if checked_count_sum > 2:
+            if checked_count_sum > 4:
                 for row in range(self.table_widget.rowCount()):
                     item = self.table_widget.item(row, 0)
                     item.setCheckState(Qt.CheckState.Unchecked)
-                error_message = ErrorMessageBox('Выбранное количество факторов превышает 2!', self)
+                error_message = ErrorMessageBox('Выбранное количество факторов превышает 4!', self)
                 error_message.exec()
         except Exception as e:
             print(f"Exception occurred: {e}")
@@ -235,7 +260,8 @@ class ModelWindow(QDialog):
                 sheet=self.selected_sheet,
                 name_column_time=chosen_column_with_time_label,
                 name_column_for_predict=chosen_column_for_predict,
-                name_column_factors=selected_columns
+                name_column_factors=selected_columns,
+                date_format=self.time_step_combo_box.currentText()
             )
             data = util.create_lags(
                 prepared_data,

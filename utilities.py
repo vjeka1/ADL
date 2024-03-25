@@ -6,7 +6,8 @@ import os
 import re
 
 
-def data_preparation(file, sheet, name_column_time, name_column_for_predict, name_column_factors):
+def data_preparation(file, sheet, name_column_time, name_column_for_predict, name_column_factors,
+                     date_format='%d.%m.%Y'):
     """
     Подготавливает данные из файла Excel.
 
@@ -42,7 +43,7 @@ def data_preparation(file, sheet, name_column_time, name_column_for_predict, nam
         result_df.append(data[name_column_for_predict])
 
     # Удаление строк, где значение в столбце name_column_time отличается от дд.мм.гггг
-    result_df[name_column_time] = pd.to_datetime(result_df[name_column_time], format='%d.%m.%Y', errors='coerce')
+    result_df[name_column_time] = pd.to_datetime(result_df[name_column_time], format=date_format, errors='coerce')
     result_df = result_df.dropna(subset=[name_column_time])
 
     result_df.reset_index(drop=True, inplace=True)  # Переиндексируем DataFrame
@@ -256,7 +257,6 @@ def create_predict_one_day(data, params_train, chosen_column_for_predict):
 #     df = rename_columns_with_suffix(df, selected_params)
 #
 #     return df
-
 
 
 def rename_columns_with_suffix(df, chosen_column):
